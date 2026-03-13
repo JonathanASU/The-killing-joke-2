@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Killing Joke — Boot</title>
+  <link rel="stylesheet" href="style2.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="scanlines"></div>
+
+  <!-- scrolling boot text behind the title -->
+  <div id="scroll-wrap">
+    <div id="scroll-inner"></div>
+  </div>
+
+  <!-- title locked in place, always on top -->
+  <div id="title-overlay">
+    <div id="title-text">THE KILLING JOKE</div>
+    <div id="subtitle-text">PART II</div>
+    <div id="prompt-text">login: <span class="blink-cursor"></span></div>
+  </div>
+
+  <script>
+    const inner = document.getElementById('scroll-inner');
+
+    const bootLines = [
+      { text: '[    0.000000] Booting Linux kernel 6.1.21-v8+ #1642 SMP PREEMPT', color: 'dim' },
+      { text: '[    0.000000] CPU: ARMv8 Processor [410fd083] revision 3',          color: 'dim' },
+      { text: '[    0.000000] Machine model: SIG-7 Secure Terminal Rev.4',           color: 'cyan' },
+      { text: '[    0.218432] PHARMTECK kernel module loaded — trial_361',            color: 'red-dim' },
+      { text: '[    0.391847] systemd[1]: Starting Journal Service...',               color: 'green' },
+      { text: '[    0.412003] systemd[1]: Started Journal Service.',                  color: 'green' },
+      { text: '[    0.500129] NET: Registered PF_INET6 protocol family',             color: 'dim' },
+      { text: '[    0.618742] Warning: probe_daemon timeout 43000ms',                 color: 'yellow' },
+      { text: '[    0.619001] subnet monitor: binding to 0.0.0.0:7361',              color: 'dim' },
+      { text: '[    0.844392] Mounting /proc filesystem...',                          color: 'dim' },
+      { text: '[    0.844500] Mounting /sys filesystem...',                           color: 'dim' },
+      { text: '[    0.901234] Starting udev Kernel Device Manager...',               color: 'green' },
+      { text: '[    1.002847] udev[182]: starting version 3.2.11',                   color: 'dim' },
+      { text: '[    1.184729] EXT4-fs (mmcblk0p2): mounted filesystem',              color: 'cyan' },
+      { text: '[    1.300441] systemd[1]: Reached target Local File Systems.',       color: 'green' },
+      { text: '[    1.448812] sig7-watchdog: initializing...',                        color: 'dim' },
+      { text: '[    1.448900] sig7-watchdog: OK',                                     color: 'green' },
+      { text: '[    1.602334] Loading neural_intercept.ko...',                        color: 'yellow' },
+      { text: '[    1.603001] neural_intercept: APPROVED_BY=CLL',                    color: 'red-dim' },
+      { text: '[    1.800222] Starting OpenSSH server daemon...',                     color: 'green' },
+      { text: '[    1.921004] sshd[441]: Server listening on 0.0.0.0 port 22',      color: 'dim' },
+      { text: '[    2.104887] Mounting encrypted volume /mnt/sig7...',               color: 'yellow' },
+      { text: '[    2.340001] /mnt/sig7: unlocked.',                                  color: 'green' },
+      { text: '[    2.512334] Loading kj_monitor daemon...',                          color: 'dim' },
+      { text: '[    2.513000] kj_monitor: lead_dev=REDACTED engineer=REDACTED',      color: 'red-dim' },
+      { text: '[    2.700441] kj_monitor: watching 847 active subnets',              color: 'cyan' },
+      { text: '[    2.844332] systemd[1]: Reached target Multi-User System.',        color: 'green' },
+      { text: '[    2.900001] catch(Death e) { /* trial_361 */ }',                   color: 'red-dim' },
+      { text: 'SIG-7 Secure Workstation — Rhode Island Ave NE',                       color: 'white' },
+      { text: 'Kernel 6.1.21-v8+  |  Uptime: 214d 07h 43m',                         color: 'white' },
+      { text: '[    3.001223] probe.retract() — subnet NVA-04',                      color: 'dim' },
+      { text: '[    3.102334] await laugh.until(null)',                               color: 'red-dim' },
+      { text: '[    3.200001] neural.corrupt(optic) — target acquired',              color: 'red-dim' },
+      { text: '[    3.300441] TRIAL_361.execute() — cohort_id=0x4B4A',              color: 'yellow' },
+      { text: '[    3.400882] log.append(victim_id=REDACTED)',                        color: 'red-dim' },
+      { text: '[    3.500001] encrypt(target, CLL_KEY_9A)',                           color: 'dim' },
+      { text: '[    3.618742] timeout: 43000ms — no response',                       color: 'yellow' },
+      { text: '[    3.700001] >>> TRIAL ONGOING',                                     color: 'red-dim' },
+      { text: '[    3.800334] subnet.mask(0.0.0.0) applied',                         color: 'dim' },
+      { text: '[    3.900001] kj_monitor: probe cycle complete',                      color: 'green' },
+      { text: '[    4.000441] systemd[1]: Starting next boot cycle...',              color: 'dim' },
+      { text: '',                                                                       color: 'dim' },
+    ];
+
+    const LINE_H    = 22;   // px per line — must match CSS line-height
+    const SPEED     = 0.4;  // px per frame — slow scroll
+    const LINE_GAP  = 55;   // ms between adding new lines
+
+    let pool = [];   // all rendered line divs
+    let offsetY = 0; // current scroll position in px
+    let running = true;
+
+    // Pre-fill the scroller with enough lines to cover the screen
+    function buildPool() {
+      // repeat lines so we always have content
+      const repeated = [];
+      for (let r = 0; r < 6; r++) repeated.push(...bootLines);
+      repeated.forEach(cfg => addLine(cfg));
+    }
+
+    function addLine(cfg) {
+      const div = document.createElement('div');
+      div.className = 'boot-line ' + (cfg.color || 'dim');
+      div.textContent = cfg.text || '\u00A0';
+      inner.appendChild(div);
+      pool.push(div);
+    }
+
+    buildPool();
+
+    // Continuous scroll loop
+    let last = null;
+    function scrollLoop(ts) {
+      if (!last) last = ts;
+      const dt = ts - last;
+      last = ts;
+
+      offsetY += SPEED * (dt / 16.67); // normalise to 60fps
+
+      // Once we've scrolled past the first line, remove it and append a new one
+      if (offsetY >= LINE_H) {
+        offsetY -= LINE_H;
+        const removed = pool.shift();
+        inner.removeChild(removed);
+        // pick a random line from bootLines to keep variety
+        const cfg = bootLines[Math.floor(Math.random() * bootLines.length)];
+        addLine(cfg);
+      }
+
+      inner.style.transform = `translateY(-${offsetY}px)`;
+      requestAnimationFrame(scrollLoop);
+    }
+
+    requestAnimationFrame(scrollLoop);
+  </script>
+</body>
+</html>

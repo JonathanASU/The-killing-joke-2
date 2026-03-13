@@ -1,0 +1,151 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red-bright: #ff2200;
+  --red:        #cc0000;
+  --red-dim:    #772200;
+  --green:      #00aa44;
+  --cyan:       #008899;
+  --yellow:     #aaaa00;
+  --white:      #cccccc;
+  --dim:        #444444;
+  --dark:       #000000;
+  --line-h:     22px;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--dark);
+  overflow: hidden;
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+}
+
+/* ── Scanlines ── */
+.scanlines {
+  position: fixed; inset: 0; z-index: 200;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent, transparent 2px,
+    rgba(0,0,0,0.09) 2px, rgba(0,0,0,0.09) 4px
+  );
+  pointer-events: none;
+  animation: scanshift 10s linear infinite;
+}
+@keyframes scanshift {
+  from { background-position: 0 0; }
+  to   { background-position: 0 80px; }
+}
+
+/* ── Scrolling boot text ── */
+#scroll-wrap {
+  position: fixed; inset: 0;
+  overflow: hidden;
+  padding: 0 28px;
+  z-index: 1;
+}
+
+#scroll-inner {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.boot-line {
+  height: var(--line-h);
+  line-height: var(--line-h);
+  font-size: clamp(10px, 1.25vw, 13px);
+  white-space: pre;
+  flex-shrink: 0;
+}
+
+/* Line colours */
+.boot-line.dim      { color: var(--dim); }
+.boot-line.red-dim  { color: var(--red-dim); }
+.boot-line.green    { color: var(--green); }
+.boot-line.cyan     { color: var(--cyan); }
+.boot-line.yellow   { color: var(--yellow); }
+.boot-line.white    { color: var(--white); }
+
+/* ── Title overlay — fixed dead centre, always on top ── */
+#title-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  /* Dark halo behind the text so boot lines don't bleed into it */
+  background: radial-gradient(
+    ellipse 70% 38% at 50% 50%,
+    rgba(0,0,0,0.82) 0%,
+    rgba(0,0,0,0.55) 55%,
+    transparent 100%
+  );
+}
+
+/* THE KILLING JOKE */
+#title-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: clamp(2rem, 5.5vw, 4.2rem);
+  letter-spacing: 0.09em;
+  line-height: 1;
+  color: var(--red-bright);
+  text-shadow:
+    0 0  6px rgba(255, 34,  0, 1.0),
+    0 0 18px rgba(220,  0,  0, 0.90),
+    0 0 45px rgba(180,  0,  0, 0.55),
+    0 0 90px rgba(140,  0,  0, 0.25);
+  animation: titlePulse 3.5s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+  0%,100% {
+    text-shadow:
+      0 0  6px rgba(255,34,0,1.0),
+      0 0 18px rgba(220,0,0,0.9),
+      0 0 45px rgba(180,0,0,0.55),
+      0 0 90px rgba(140,0,0,0.25);
+  }
+  50% {
+    text-shadow:
+      0 0 10px rgba(255,60,0,1.0),
+      0 0 30px rgba(230,0,0,1.0),
+      0 0 70px rgba(190,0,0,0.7),
+      0 0 130px rgba(150,0,0,0.3);
+  }
+}
+
+/* PART II — clearly subordinate but still red and bright */
+#subtitle-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: clamp(0.9rem, 2.1vw, 1.55rem);
+  letter-spacing: 0.38em;
+  color: var(--red);
+  margin-top: 0.18em;
+  margin-bottom: 0.55em;
+  text-shadow:
+    0 0  5px rgba(204, 0, 0, 0.95),
+    0 0 16px rgba(180, 0, 0, 0.55),
+    0 0 35px rgba(140, 0, 0, 0.22);
+}
+
+/* login prompt */
+#prompt-text {
+  font-size: clamp(10px, 1.25vw, 13px);
+  color: var(--white);
+  letter-spacing: 0.02em;
+}
+
+/* blinking block cursor */
+.blink-cursor {
+  display: inline-block;
+  width: 0.55em; height: 0.9em;
+  background: var(--white);
+  vertical-align: text-bottom;
+  margin-left: 1px;
+  animation: blink 1.1s step-start infinite;
+}
+@keyframes blink {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
